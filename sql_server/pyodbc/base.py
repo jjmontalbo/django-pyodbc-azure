@@ -577,7 +577,14 @@ class CursorWrapper(object):
         return row
 
     def fetchone(self):
-        row = self.cursor.fetchone()
+        rc = self.cursor.rowcount
+        try:
+            row = self.cursor.fetchone()
+        except Database.ProgrammingError:
+            if rc == 0:
+                row = None
+            else:
+                raise
         if row is not None:
             row = self.format_row(row)
         # Any remaining rows in the current set must be discarded
@@ -586,10 +593,22 @@ class CursorWrapper(object):
         return row
 
     def fetchmany(self, chunk):
-        return self.format_rows(self.cursor.fetchmany(chunk))
+        rc = self.cursor.rowcount
+        try:
+            return self.format_rows(self.cursor.fetchmany(chunk))
+        except Database.ProgrammingError:
+            if rc == 0:
+                return self.format_rows([])
+            raise
 
     def fetchall(self):
-        return self.format_rows(self.cursor.fetchall())
+        rc = self.cursor.rowcount
+        try:
+            return self.format_rows(self.cursor.fetchall())
+        except Database.ProgrammingError:
+            if rc == 0:
+                return self.format_rows([])
+            raise
 
     def __getattr__(self, attr):
         if attr in self.__dict__:
