@@ -394,7 +394,7 @@ class DatabaseWrapper(BaseDatabaseWrapper):
     @cached_property
     def sql_server_version(self):
         with self.temporary_connection() as cursor:
-            cursor.execute("SELECT CAST(SERVERPROPERTY('ProductVersion') AS varchar)")
+            cursor.execute("SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar)")
             ver = cursor.fetchone()[0]
             ver = int(ver.split('.')[0])
             if not ver in self._sql_server_versions:
